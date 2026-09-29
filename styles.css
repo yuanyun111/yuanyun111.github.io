@@ -20,9 +20,9 @@
   --shadow:0 20px 48px rgba(0,0,0,.5);
   --grid:rgba(120,155,200,.055);
   --grain:.05;
-  --veil-top:.72;                   /* 蒙版各段强度 */
-  --veil-mid:.44;
-  --veil-bot:.78;
+  --veil-top:.54;                   /* 暗色主题需更厚的蒙版压住亮底图 */
+  --veil-mid:.22;
+  --veil-bot:.58;
 }
 :root[data-theme="light"]{
   --bg:#f5f8fd;
@@ -40,9 +40,9 @@
   --shadow:0 16px 38px rgba(20,45,85,.10);
   --grid:rgba(18,50,95,.045);
   --grain:.035;
-  --veil-top:.62;
-  --veil-mid:.40;
-  --veil-bot:.68;
+  --veil-top:.30;                   /* 只护住导航栏一带 */
+  --veil-mid:.10;                   /* 主内容区几乎全透 */
+  --veil-bot:.44;                   /* 页脚收边 */
 }
 
 /* 背景图 —— 命名为 bg.jpg 放进同目录即可自动生效 */
@@ -104,14 +104,18 @@ ul{list-style:none}
 .bg-veil{
   position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease;
   background:
-    radial-gradient(ellipse 110% 52% at 50% -4%,
-      color-mix(in srgb,var(--bg) calc(var(--veil-top) * 100%),transparent) 0%,
-      transparent 72%),
+    /* 顶部：只压窄窄一条，护住导航栏；往下迅速放开 */
     linear-gradient(180deg,
       color-mix(in srgb,var(--bg) calc(var(--veil-top) * 100%),transparent) 0%,
-      color-mix(in srgb,var(--bg) calc(var(--veil-mid) * 100%),transparent) 34%,
-      color-mix(in srgb,var(--bg) calc(var(--veil-mid) * 100%),transparent) 62%,
-      color-mix(in srgb,var(--bg) calc(var(--veil-bot) * 100%),transparent) 100%);
+      transparent 18%),
+    /* 底部：收边，让页脚不飘 */
+    linear-gradient(180deg,
+      transparent 66%,
+      color-mix(in srgb,var(--bg) calc(var(--veil-bot) * 100%),transparent) 100%),
+    /* 全屏：一层很薄的底，保证任何位置的文字都有最低对比度 */
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--bg) calc(var(--veil-mid) * 100%),transparent) 0%,
+      color-mix(in srgb,var(--bg) calc(var(--veil-mid) * 100%),transparent) 100%);
 }
 :root.has-bg .bg-veil{opacity:1}
 
@@ -253,11 +257,16 @@ ul{list-style:none}
   filter:drop-shadow(0 2px 12px color-mix(in srgb,var(--bg) 62%,transparent));
 }
 
-.hero-role{font-size:17px;color:var(--dim);letter-spacing:.5px}
+.hero-role{
+  font-size:17px;color:var(--dim);letter-spacing:.5px;
+  text-shadow:0 1px 3px color-mix(in srgb,var(--bg) 92%,transparent),
+              0 0 20px color-mix(in srgb,var(--bg) 88%,transparent);
+}
 
 .hero-tag{
   margin-top:16px;font-size:clamp(19px,2.4vw,25px);font-weight:600;letter-spacing:1px;
-  text-shadow:0 1px 14px color-mix(in srgb,var(--bg) 70%,transparent);
+  text-shadow:0 1px 3px color-mix(in srgb,var(--bg) 92%,transparent),
+              0 0 22px color-mix(in srgb,var(--bg) 88%,transparent);
 }
 
 .hero-tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}
@@ -334,7 +343,8 @@ ul{list-style:none}
 .sec-title{
   display:flex;align-items:baseline;gap:14px;
   margin-bottom:26px;font-size:23px;font-weight:700;letter-spacing:1.5px;
-  text-shadow:0 1px 14px color-mix(in srgb,var(--bg) 72%,transparent);
+  text-shadow:0 1px 3px color-mix(in srgb,var(--bg) 92%,transparent),
+              0 0 20px color-mix(in srgb,var(--bg) 86%,transparent);
 }
 .sec-title .num{
   font-size:13px;font-weight:700;letter-spacing:1px;color:var(--accent);
