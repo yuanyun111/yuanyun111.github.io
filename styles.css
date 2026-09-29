@@ -1,43 +1,51 @@
 /* =========================================================
    缘云 · 个人主页
-   零依赖 · 无外部资源 · 深浅双主题
+   零依赖 · 无外部资源 · 深浅双主题 · 动态背景
    ========================================================= */
 
 /* ---------- 主题变量 ---------- */
 :root[data-theme="dark"]{
   --bg:#070c15;
   --card:rgba(19,28,44,.58);
+  --card-bg-alpha:.78;              /* 有背景图时卡片的不透明度 */
   --card-hi:rgba(30,42,62,.80);
   --border:rgba(120,155,200,.16);
   --border-hi:rgba(56,189,248,.45);
   --text:#e9effb;
-  --dim:#93a6c2;
-  --faint:#61748f;
+  --dim:#a8bad4;
+  --faint:#7488a4;
   --accent:#38bdf8;
   --accent-2:#fbbf24;
   --accent-soft:rgba(56,189,248,.12);
   --shadow:0 20px 48px rgba(0,0,0,.5);
   --grid:rgba(120,155,200,.055);
   --grain:.05;
+  --veil-top:.72;                   /* 蒙版各段强度 */
+  --veil-mid:.44;
+  --veil-bot:.78;
 }
 :root[data-theme="light"]{
   --bg:#f5f8fd;
   --card:rgba(255,255,255,.82);
+  --card-bg-alpha:.86;
   --card-hi:#ffffff;
   --border:rgba(18,50,95,.11);
   --border-hi:rgba(3,105,161,.38);
   --text:#0c1a2e;
-  --dim:#4d6183;
-  --faint:#8496ad;
+  --dim:#42566f;
+  --faint:#7d8fa6;
   --accent:#0369a1;
   --accent-2:#b45309;
   --accent-soft:rgba(3,105,161,.09);
   --shadow:0 16px 38px rgba(20,45,85,.10);
   --grid:rgba(18,50,95,.045);
   --grain:.035;
+  --veil-top:.62;
+  --veil-mid:.40;
+  --veil-bot:.68;
 }
 
-/* 背景图 —— 把图片命名为 bg.jpg 放进同目录即可自动生效 */
+/* 背景图 —— 命名为 bg.jpg 放进同目录即可自动生效 */
 :root{ --bg-image:url("bg.jpg"); }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -64,35 +72,46 @@ ul{list-style:none}
 ::selection{background:var(--accent);color:#fff}
 
 /* =========================================================
-   背景装饰层
+   背景层
    ========================================================= */
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
 
-/* 背景照片层（默认透明，检测到 bg.jpg 后由 JS 打开） */
+/* 视差位移容器 —— 比视口大一圈，留出移动余量 */
 .bg-photo{
+  position:absolute;inset:-18% -5%;
+  opacity:0;
+  transition:opacity 1.4s ease;
+  will-change:transform;
+}
+:root.has-bg .bg-photo{opacity:1}
+
+/* 图片本体 —— 独立承担呼吸缩放，与位移解耦 */
+.bg-photo-img{
   position:absolute;inset:0;
   background-image:var(--bg-image);
   background-size:cover;
-  background-position:center;
-  filter:blur(3px) saturate(.8) contrast(1.05);
-  transform:scale(1.07);            /* 放大一点，避免模糊后边缘露白 */
-  opacity:0;
-  transition:opacity 1.2s ease;
+  background-position:center 44%;
+  filter:blur(2.4px) saturate(1.06);
+  will-change:transform;
+  animation:breathe 52s ease-in-out infinite alternate;
 }
-:root.has-bg .bg-photo{opacity:.5}
+@keyframes breathe{
+  from{transform:scale(1.03)}
+  to{transform:scale(1.12)}
+}
 
-/* 蒙版：保证正文在任何底图上都可读 */
+/* 蒙版 —— 保证正文在任何底图上都可读 */
 .bg-veil{
-  position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease;
+  position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease;
   background:
-    radial-gradient(ellipse 100% 62% at 50% 0%,
-      color-mix(in srgb,var(--bg) 55%,transparent) 0%,
-      color-mix(in srgb,var(--bg) 90%,transparent) 62%,
-      var(--bg) 100%),
+    radial-gradient(ellipse 110% 52% at 50% -4%,
+      color-mix(in srgb,var(--bg) calc(var(--veil-top) * 100%),transparent) 0%,
+      transparent 72%),
     linear-gradient(180deg,
-      color-mix(in srgb,var(--bg) 62%,transparent) 0%,
-      color-mix(in srgb,var(--bg) 88%,transparent) 55%,
-      var(--bg) 100%);
+      color-mix(in srgb,var(--bg) calc(var(--veil-top) * 100%),transparent) 0%,
+      color-mix(in srgb,var(--bg) calc(var(--veil-mid) * 100%),transparent) 34%,
+      color-mix(in srgb,var(--bg) calc(var(--veil-mid) * 100%),transparent) 62%,
+      color-mix(in srgb,var(--bg) calc(var(--veil-bot) * 100%),transparent) 100%);
 }
 :root.has-bg .bg-veil{opacity:1}
 
@@ -105,22 +124,23 @@ ul{list-style:none}
   -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 20%,#000 20%,transparent 78%);
   transition:opacity .6s ease;
 }
-:root.has-bg .bg-grid{opacity:.5}
+:root.has-bg .bg-grid{opacity:.4}
 
 .glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;transition:opacity .6s ease}
 .glow-a{width:620px;height:620px;top:-260px;left:-160px;background:radial-gradient(circle,var(--accent),transparent 68%)}
 .glow-b{width:540px;height:540px;top:6%;right:-200px;background:radial-gradient(circle,var(--accent-2),transparent 68%);opacity:.28}
-:root.has-bg .glow{opacity:.24}
+:root.has-bg .glow{opacity:.18}
 
-/* 漂浮的几何圆环 —— 数据 / 关联的隐喻 */
 .orbit{
   position:absolute;border-radius:50%;
   border:1px solid var(--border);
   animation:drift 26s ease-in-out infinite;
+  transition:opacity .6s ease;
 }
 .orbit-1{width:190px;height:190px;top:16%;left:7%;animation-delay:0s}
 .orbit-2{width:96px;height:96px;top:62%;left:13%;border-color:var(--border-hi);animation-delay:-9s}
 .orbit-3{width:132px;height:132px;top:34%;right:9%;animation-delay:-16s}
+:root.has-bg .orbit{opacity:.5}
 
 @keyframes drift{
   0%,100%{transform:translate(0,0) scale(1)}
@@ -134,7 +154,14 @@ ul{list-style:none}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* 跟随鼠标的聚光 */
+/* 光尘粒子画布 */
+.motes{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  opacity:0;transition:opacity 1.4s ease;
+}
+:root.has-bg .motes{opacity:1}
+
+/* 跟随鼠标的聚光（无背景图时启用；有背景图时改用光尘） */
 .spotlight{
   position:fixed;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(560px circle at var(--mx,50%) var(--my,30%),
@@ -142,6 +169,7 @@ ul{list-style:none}
   opacity:0;transition:opacity .5s ease;
 }
 .spotlight.on{opacity:1}
+:root.has-bg .spotlight{display:none}
 
 /* 顶部阅读进度 */
 .progress{
@@ -156,19 +184,20 @@ ul{list-style:none}
    ========================================================= */
 .nav{
   position:sticky;top:0;z-index:60;
-  backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
+  backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
   background:var(--bg);                                    /* 降级 */
   background:color-mix(in srgb,var(--bg) 70%,transparent);
   border-bottom:1px solid transparent;
   transition:border-color .3s,background .3s;
 }
+:root.has-bg .nav{background:color-mix(in srgb,var(--bg) 76%,transparent)}
 .nav.scrolled{border-bottom-color:var(--border)}
 
 .nav-inner{display:flex;align-items:center;gap:20px;height:66px}
 
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px}
 .brand-mark{
-  position:relative;display:grid;place-items:center;width:32px;height:32px;border-radius:9px;
+  display:grid;place-items:center;width:32px;height:32px;border-radius:9px;
   background:linear-gradient(135deg,var(--accent),var(--accent-2));
   color:#fff;font-size:15px;font-weight:700;
   box-shadow:0 4px 14px -4px var(--accent);
@@ -204,7 +233,7 @@ ul{list-style:none}
   display:inline-flex;align-items:center;gap:8px;
   padding:6px 15px;border:1px solid var(--border-hi);border-radius:99px;
   font-size:13px;color:var(--dim);background:var(--accent-soft);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
 }
 .dot{
   width:7px;height:7px;border-radius:50%;background:#22c55e;
@@ -221,12 +250,14 @@ ul{list-style:none}
   font-weight:800;letter-spacing:6px;line-height:1.1;
   background:linear-gradient(120deg,var(--text) 18%,var(--accent) 54%,var(--accent-2) 94%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 12px color-mix(in srgb,var(--bg) 62%,transparent));
 }
 
 .hero-role{font-size:17px;color:var(--dim);letter-spacing:.5px}
 
 .hero-tag{
   margin-top:16px;font-size:clamp(19px,2.4vw,25px);font-weight:600;letter-spacing:1px;
+  text-shadow:0 1px 14px color-mix(in srgb,var(--bg) 70%,transparent);
 }
 
 .hero-tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}
@@ -234,7 +265,7 @@ ul{list-style:none}
   padding:4px 13px;border-radius:99px;font-size:12.5px;
   border:1px solid var(--border);color:var(--dim);
   background:var(--card);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   transition:.25s;
 }
 .hero-tags span:hover{color:var(--accent);border-color:var(--border-hi);transform:translateY(-2px)}
@@ -254,12 +285,11 @@ ul{list-style:none}
 }
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 30px -8px var(--accent)}
 .btn-ghost{
-  border-color:var(--border);color:var(--dim);background:var(--card);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-color:var(--border);color:var(--text);background:var(--card);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
 }
 .btn-ghost:hover{color:var(--accent);border-color:var(--border-hi);transform:translateY(-2px)}
 
-/* 按钮光泽扫过 */
 .btn-primary::after{
   content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(110deg,transparent 32%,rgba(255,255,255,.42) 50%,transparent 68%);
@@ -298,6 +328,7 @@ ul{list-style:none}
 .sec-title{
   display:flex;align-items:baseline;gap:14px;
   margin-bottom:26px;font-size:23px;font-weight:700;letter-spacing:1.5px;
+  text-shadow:0 1px 14px color-mix(in srgb,var(--bg) 72%,transparent);
 }
 .sec-title .num{
   font-size:13px;font-weight:700;letter-spacing:1px;color:var(--accent);
@@ -309,13 +340,15 @@ ul{list-style:none}
   position:relative;
   padding:24px 26px;border-radius:16px;
   background:var(--card);border:1px solid var(--border);
-  backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+  backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
   box-shadow:var(--shadow);
   transition:border-color .3s,transform .3s,background .3s,box-shadow .3s;
 }
+/* 有背景图时提高卡片不透明度，保证正文对比度 */
+:root.has-bg .card{background:color-mix(in srgb,var(--bg) calc(var(--card-bg-alpha) * 100%),transparent)}
+
 .card:hover{border-color:var(--border-hi)}
 
-/* 卡片边缘的渐变高光 */
 .card::before{
   content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
   background:linear-gradient(135deg,transparent 28%,var(--accent) 50%,transparent 72%);
@@ -415,7 +448,6 @@ ul{list-style:none}
   background:var(--accent);
 }
 
-/* 待补充占位 */
 .ph{
   margin-top:12px;padding:6px 12px;border-radius:8px;font-size:13px;
   color:var(--accent-2);
@@ -511,6 +543,7 @@ ul{list-style:none}
   .wrap{width:calc(100% - 36px)}
   .sec{padding:40px 0}
   .spotlight{display:none}
+  .bg-photo{inset:-10% -3%}
 }
 
 @media (max-width:520px){
@@ -526,5 +559,6 @@ ul{list-style:none}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}
-  .spotlight{display:none}
+  .spotlight,.motes{display:none}
+  .bg-photo-img{transform:scale(1.05)}
 }

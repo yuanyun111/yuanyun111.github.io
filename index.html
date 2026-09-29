@@ -11,9 +11,11 @@
 <body>
 
 <!-- ============ 背景装饰层 ============ -->
-<!-- 把背景图命名为 bg.jpg 放进同目录，页面会自动识别并启用 -->
+<!-- bg.jpg 存在时自动启用：视差位移 + 呼吸缩放 + 光尘粒子 -->
 <div class="bg" aria-hidden="true">
-  <div class="bg-photo"></div>
+  <div class="bg-photo" id="bgPhoto">
+    <div class="bg-photo-img"></div>
+  </div>
   <div class="bg-veil"></div>
   <div class="bg-grid"></div>
   <div class="glow glow-a"></div>
@@ -22,6 +24,7 @@
   <div class="orbit orbit-2"></div>
   <div class="orbit orbit-3"></div>
   <div class="bg-noise"></div>
+  <canvas class="motes" id="motes"></canvas>
 </div>
 
 <div class="spotlight" id="spotlight" aria-hidden="true"></div>
