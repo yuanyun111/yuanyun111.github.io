@@ -1,13 +1,13 @@
 /* =========================================================
-   包景帆 · 个人主页 交互脚本
+   缘云 · 个人主页 交互脚本
    原生 JS，无依赖
    ========================================================= */
 (function () {
   'use strict';
 
-  /* ---------- 1. 主题：读取本地偏好 → 跟随系统 → 默认深色 ---------- */
   var root = document.documentElement;
 
+  /* ---------- 1. 主题：本地偏好 → 系统偏好 → 默认深色 ---------- */
   function applyTheme(t) {
     root.setAttribute('data-theme', t);
     try { localStorage.setItem('theme', t); } catch (e) { /* 隐私模式下忽略 */ }
@@ -31,7 +31,18 @@
     });
   }
 
-  /* ---------- 2. 滚动入场动画 ---------- */
+  /* ---------- 2. 背景图探测 ----------
+     CSS 里已写入 url("bg.jpg")，但只有文件真的存在时才启用蒙版与
+     半透明调整，否则页面上会白铺一层灰。                        */
+  (function detectBackground() {
+    var probe = new Image();
+    probe.onload = function () {
+      if (probe.naturalWidth > 0) root.classList.add('has-bg');
+    };
+    probe.src = 'bg.jpg';
+  })();
+
+  /* ---------- 3. 滚动入场动画 ---------- */
   var reveals = document.querySelectorAll('.reveal');
 
   if ('IntersectionObserver' in window) {
@@ -46,21 +57,29 @@
 
     reveals.forEach(function (el) { io.observe(el); });
   } else {
-    // 兜底：不支持 IntersectionObserver 就全部直接显示
     reveals.forEach(function (el) { el.classList.add('in'); });
   }
 
-  /* ---------- 3. 导航：滚动态 + 平滑锚点 ---------- */
+  /* ---------- 4. 滚动：导航态 / 回顶 / 阅读进度 ---------- */
   var nav = document.getElementById('nav');
   var toTop = document.getElementById('toTop');
+  var bar = document.getElementById('progress');
 
   function onScroll() {
     var y = window.scrollY || window.pageYOffset;
+
     if (nav) nav.classList.toggle('scrolled', y > 12);
     if (toTop) toTop.classList.toggle('show', y > 420);
+
+    if (bar) {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = max > 0 ? (y / max) * 100 : 0;
+      bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+    }
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
   onScroll();
 
   if (toTop) {
@@ -69,7 +88,33 @@
     });
   }
 
-  /* ---------- 4. 导航高亮当前板块 ---------- */
+  /* ---------- 5. 跟随鼠标的聚光（仅精确指针设备） ---------- */
+  var spot = document.getElementById('spotlight');
+  var finePointer = window.matchMedia &&
+                    window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+  if (spot && finePointer) {
+    var mx = 0, my = 0, queued = false;
+
+    window.addEventListener('mousemove', function (e) {
+      mx = e.clientX;
+      my = e.clientY;
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () {
+        spot.style.setProperty('--mx', mx + 'px');
+        spot.style.setProperty('--my', my + 'px');
+        spot.classList.add('on');
+        queued = false;
+      });
+    }, { passive: true });
+
+    document.addEventListener('mouseleave', function () {
+      spot.classList.remove('on');
+    });
+  }
+
+  /* ---------- 6. 导航高亮当前板块 ---------- */
   var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
   var sections = links
     .map(function (a) { return document.querySelector(a.getAttribute('href')); })
@@ -91,7 +136,7 @@
     sections.forEach(function (s) { spy.observe(s); });
   }
 
-  /* ---------- 5. 头像加载失败时的兜底（首字母） ---------- */
+  /* ---------- 7. 头像加载失败时的兜底（首字） ---------- */
   var avatar = document.getElementById('avatar');
   if (avatar) {
     var img = avatar.querySelector('img');
